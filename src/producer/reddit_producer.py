@@ -17,15 +17,16 @@ reddit = praw.Reddit(
 )
 
 # Inicializar sesión AWS con perfil personalizado
-session = boto3.Session(profile_name="reddit-dev", region_name="us-east-1")
+session = boto3.Session(profile_name="reddit-dev", region_name="us-east-2")
 kinesis = session.client("kinesis")
 stream_name = "reddit-stream"
 
 # Elegir subreddit
-subreddit = reddit.subreddit('news')
+subreddit = reddit.subreddit('worldnews')
 
 print("Iniciando stream y envío a Kinesis...")
 
+# ✅ Enviar cada post a Kinesis
 for submission in subreddit.stream.submissions(skip_existing=True):
     post = {
         "id": submission.id,
@@ -37,6 +38,7 @@ for submission in subreddit.stream.submissions(skip_existing=True):
     }
 
     print(f"Enviando: {post['title'][:60]}...")
+    print("Enviando a Kinesis...")
     kinesis.put_record(
         StreamName=stream_name,
         Data=json.dumps(post),
