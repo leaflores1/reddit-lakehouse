@@ -1,5 +1,7 @@
 import praw
 import configparser
+import boto3
+import json
 from datetime import datetime
 
 # Leer configuración
@@ -14,10 +16,16 @@ reddit = praw.Reddit(
     user_agent=config['reddit']['user_agent']
 )
 
-# Stream de nuevos posts en r/argentina
-subreddit = reddit.subreddit('argentina')
+# Inicializar sesión AWS con perfil personalizado
+session = boto3.Session(profile_name="reddit-dev", region_name="us-east-1")
+kinesis = session.client("kinesis")
+stream_name = "reddit-stream"
 
-print("Iniciando stream...")
+# Elegir subreddit
+subreddit = reddit.subreddit('news')
+
+print("Iniciando stream y envío a Kinesis...")
+
 for submission in subreddit.stream.submissions(skip_existing=True):
     post = {
         "id": submission.id,
@@ -27,4 +35,10 @@ for submission in subreddit.stream.submissions(skip_existing=True):
         "url": submission.url,
         "text": submission.selftext
     }
-    print(post)  # Aquí podrías hacer: enviar a Kinesis / guardar en S3 / etc.
+
+    print(f"Enviando: {post['title'][:60]}...")
+    kinesis.put_record(
+        StreamName=stream_name,
+        Data=json.dumps(post),
+        PartitionKey=post["id"]
+    )
