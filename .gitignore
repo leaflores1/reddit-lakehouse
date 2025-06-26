@@ -1,0 +1,32 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.env
+*.log
+
+# Config
+src/producer/config.ini
+
+# VSCode
+.vscode/
+
+# Terraform
+*.tfstate
+*.tfstate.*
+.terraform/
+
+# Jupyter
+.ipynb_checkpoints/
+
+# MacOS/Linux
+.DS_Store
+*.swp
+
+# AWS credentials (por las dudas)
+.aws/
+
+# Output y temporales
+*.gz
+*.parquet
+output/
